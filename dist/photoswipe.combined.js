@@ -3947,7 +3947,7 @@ var initPhotoSwipeFromDOM = function(gallerySelector) {
 		return false;
 	};
 
-	var openPhotoSwipe = function(index, galleryElement, disableAnimation) {
+	var openPhotoSwipe = function(index, galleryElement) {
 		var pswpElement = document.querySelectorAll('.pswp')[0],
 			gallery,
 			options,
@@ -3975,10 +3975,6 @@ var initPhotoSwipeFromDOM = function(gallerySelector) {
 	    if( isNaN(options.index) ) {
 	    	return;
 	    }
-
-		if(disableAnimation) {
-			options.showAnimationDuration = 0;
-		}
 
 		// Pass data to PhotoSwipe and initialize it
 		gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);
