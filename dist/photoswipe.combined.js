@@ -4016,7 +4016,6 @@ initPhotoSwipeFromDOM('.gallery');
 @keyframes donut-rotate{0%{transform:rotate(0)}50%{transform:rotate(-140deg)}100%{transform:rotate(0)}}
 .pswp__ui{visibility:visible;opacity:1;z-index:16}
 .pswp__top-bar{background-color:rgba(0,0,0,.5);transition:opacity .2s cubic-bezier(.4,0,.22,1);position:absolute;left:0;top:0;height:44px;width:100%;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px)}
-.pswp__ui--fit .pswp__top-bar{background-color:rgba(0,0,0,.3)}
 .pswp__ui--idle .pswp__top-bar,.pswp__ui--idle .pswp__button--arrow--left,.pswp__ui--idle .pswp__button--arrow--right{opacity:0}
 .pswp__ui--hidden .pswp__top-bar,.pswp__ui--hidden .pswp__button--arrow--left,.pswp__ui--hidden .pswp__button--arrow--right{opacity:.001}
 .pswp__ui--one-slide .pswp__button--arrow--left,.pswp__ui--one-slide .pswp__button--arrow--right,.pswp__ui--one-slide .pswp__counter,.pswp__element--disabled{display:none}
