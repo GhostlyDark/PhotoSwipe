@@ -2340,6 +2340,7 @@ var _showOrHideTimeout,
 			// apply hw-acceleration to image
 			if(item.miniImg) {
 				item.miniImg.style.webkitBackfaceVisibility = 'hidden';
+				item.miniImg.style.backfaceVisibility = 'hidden';
 			}
 
 			if(!out) {
