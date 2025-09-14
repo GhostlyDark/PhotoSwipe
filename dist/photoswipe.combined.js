@@ -190,10 +190,6 @@ var framework = {
 			features.caf = function(id) { clearTimeout(id); };
 		}
 
-		// Detect SVG support
-		features.svg = !!document.createElementNS && 
-						!!document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect;
-
 		framework.features = features;
 
 		return features;
@@ -812,7 +808,6 @@ var publicMethods = {
 		}
 		rootClasses += _likelyTouchDevice ? 'pswp--touch' : 'pswp--notouch';
 		rootClasses += _features.animationName ? ' pswp--css_animation' : '';
-		rootClasses += _features.svg ? ' pswp--svg' : '';
 		framework.addClass(template, rootClasses);
 
 		self.updateSize();
