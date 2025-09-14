@@ -133,7 +133,7 @@ var framework = {
 	 * {
 	 *  raf : request animation frame function
 	 *  caf : cancel animation frame function
-	 *  transfrom : transform property key (with vendor), or null if not supported
+	 *  transform : transform property key or null if not supported
 	 * }
 	 * 
 	 */
@@ -143,7 +143,6 @@ var framework = {
 		}
 		var helperEl = framework.createEl(),
 			helperStyle = helperEl.style,
-			vendor = '',
 			features = {};
 
 		features.touch = 'ontouchstart' in window;
@@ -156,32 +155,25 @@ var framework = {
 		features.pointerEvent = navigator.pointerEnabled || navigator.msPointerEnabled;
 		
 		var styleChecks = ['transform', 'perspective', 'animationName'],
-			vendors = ['', 'webkit','Moz','ms','O'],
 			styleCheckItem,
 			styleName;
 
 		for(var i = 0; i < 4; i++) {
-			vendor = vendors[i];
 
 			for(var a = 0; a < 3; a++) {
 				styleCheckItem = styleChecks[a];
-
-				// uppercase first letter of property name, if vendor is present
-				styleName = vendor + (vendor ? 
-										styleCheckItem.charAt(0).toUpperCase() + styleCheckItem.slice(1) : 
-										styleCheckItem);
+				styleName = styleCheckItem;
 			
 				if(!features[styleCheckItem] && styleName in helperStyle ) {
 					features[styleCheckItem] = styleName;
 				}
 			}
 
-			if(vendor && !features.raf) {
-				vendor = vendor.toLowerCase();
-				features.raf = window[vendor+'RequestAnimationFrame'];
+			if(!features.raf) {
+				features.raf = window['RequestAnimationFrame'];
 				if(features.raf) {
-					features.caf = window[vendor+'CancelAnimationFrame'] || 
-									window[vendor+'CancelRequestAnimationFrame'];
+					features.caf = window['CancelAnimationFrame'] || 
+									window['CancelRequestAnimationFrame'];
 				}
 			}
 		}
