@@ -147,10 +147,8 @@ var framework = {
 
 		features.touch = 'ontouchstart' in window;
 
-		if(window.requestAnimationFrame) {
-			features.raf = window.requestAnimationFrame;
-			features.caf = window.cancelAnimationFrame;
-		}
+		features.raf = window.requestAnimationFrame;
+		features.caf = window.cancelAnimationFrame;
 
 		features.pointerEvent = navigator.pointerEnabled || navigator.msPointerEnabled;
 		
@@ -169,25 +167,6 @@ var framework = {
 				}
 			}
 
-			if(!features.raf) {
-				features.raf = window['RequestAnimationFrame'];
-				if(features.raf) {
-					features.caf = window['CancelAnimationFrame'] || 
-									window['CancelRequestAnimationFrame'];
-				}
-			}
-		}
-			
-		if(!features.raf) {
-			var lastTime = 0;
-			features.raf = function(fn) {
-				var currTime = new Date().getTime();
-				var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-				var id = window.setTimeout(function() { fn(currTime + timeToCall); }, timeToCall);
-				lastTime = currTime + timeToCall;
-				return id;
-			};
-			features.caf = function(id) { clearTimeout(id); };
 		}
 
 		framework.features = features;
@@ -290,7 +269,6 @@ var _isOpen,
 	_dragCancelEvent,
 	_transformKey,
 	_pointerEventEnabled,
-	_isFixedPosition = true,
 	_likelyTouchDevice,
 	_modules = [],
 	_requestAF,
@@ -440,10 +418,7 @@ var _isOpen,
 	_bindEvents = function() {
 		framework.bind(document, 'keydown', self);
 
-		if(_features.transform) {
-			// don't bind click event in browsers that don't support transform (mostly IE8)
-			framework.bind(self.scrollWrap, 'click', self);
-		}
+		framework.bind(self.scrollWrap, 'click', self);
 		
 
 		if(!_options.mouseUsed) {
@@ -461,9 +436,7 @@ var _isOpen,
 		framework.unbind(document, 'keydown', self);
 		framework.unbind(document, 'mousemove', _onFirstMouseMove);
 
-		if(_features.transform) {
-			framework.unbind(self.scrollWrap, 'click', self);
-		}
+		framework.unbind(self.scrollWrap, 'click', self);
 
 		if(_isDragging) {
 			framework.unbind(window, _upMoveEvents, self);
@@ -516,54 +489,12 @@ var _isOpen,
 
 	_setupTransforms = function() {
 
-		if(_transformKey) {
-			// setup 3d transforms
-			var allow3dTransform = _features.perspective && !_likelyTouchDevice;
-			_translatePrefix = 'translate' + (allow3dTransform ? '3d(' : '(');
-			_translateSufix = _features.perspective ? ', 0px)' : ')';	
-			return;
-		}
+		// setup 3d transforms
+		var allow3dTransform = _features.perspective && !_likelyTouchDevice;
+		_translatePrefix = 'translate' + (allow3dTransform ? '3d(' : '(');
+		_translateSufix = _features.perspective ? ', 0px)' : ')';	
+		return;
 
-		// Override zoom/pan/move functions in case old browser is used (most likely IE)
-		// (so they use left/top/width/height, instead of CSS transform)
-	
-		_transformKey = 'left';
-		framework.addClass(template, 'pswp--ie');
-
-		_setTranslateX = function(x, elStyle) {
-			elStyle.left = x + 'px';
-		};
-		_applyZoomPanToItem = function(item) {
-
-			var zoomRatio = item.fitRatio > 1 ? 1 : item.fitRatio,
-				s = item.container.style,
-				w = zoomRatio * item.w,
-				h = zoomRatio * item.h;
-
-			s.width = w + 'px';
-			s.height = h + 'px';
-			s.left = item.initialPosition.x + 'px';
-			s.top = item.initialPosition.y + 'px';
-
-		};
-		_applyCurrentZoomPan = function() {
-			if(_currZoomElementStyle) {
-
-				var s = _currZoomElementStyle,
-					item = self.currItem,
-					zoomRatio = item.fitRatio > 1 ? 1 : item.fitRatio,
-					w = zoomRatio * item.w,
-					h = zoomRatio * item.h;
-
-				s.width = w + 'px';
-				s.height = h + 'px';
-
-
-				s.left = _panOffset.x + 'px';
-				s.top = _panOffset.y + 'px';
-			}
-			
-		};
 	},
 
 	_onKeyDown = function(e) {
@@ -785,12 +716,7 @@ var publicMethods = {
 		self.currItem = _getItemAt( _currentItemIndex );
 		
 		if(_options.modal) {
-			if(!_isFixedPosition) {
-				template.style.position = 'absolute';
-				template.style.top = framework.getScrollY() + 'px';
-			} else {
-				template.style.position = 'fixed';
-			}
+			template.style.position = 'fixed';
 		}
 
 		if(_currentWindowScrollY === undefined) {
@@ -844,24 +770,6 @@ var publicMethods = {
 		self.updateCurrItem();
 
 		_shout('afterInit');
-
-		if(!_isFixedPosition) {
-
-			// On all versions of iOS lower than 8.0, we check size of viewport every second.
-			// 
-			// This is done to detect when Safari top & bottom bars appear, 
-			// as this action doesn't trigger any events (like resize). 
-			// 
-			// On iOS8 they fixed this.
-			// 
-			// 10 Nov 2014: iOS 7 usage ~40%. iOS 8 usage 56%.
-			
-			_updateSizeInterval = setInterval(function() {
-				if(!_numAnimations && !_isDragging && !_isZooming && (_currZoomLevel === self.currItem.initialZoomLevel)  ) {
-					self.updateSize();
-				}
-			}, 1000);
-		}
 
 		framework.addClass(template, 'pswp--visible');
 	},
@@ -1073,24 +981,6 @@ var publicMethods = {
 
 
 	updateSize: function(force) {
-		
-		if(!_isFixedPosition && _options.modal) {
-			var windowScrollY = framework.getScrollY();
-			if(_currentWindowScrollY !== windowScrollY) {
-				template.style.top = windowScrollY + 'px';
-				_currentWindowScrollY = windowScrollY;
-			}
-			if(!force && _windowVisibleSize.x === window.innerWidth && _windowVisibleSize.y === window.innerHeight) {
-				return;
-			}
-			_windowVisibleSize.x = window.innerWidth;
-			_windowVisibleSize.y = window.innerHeight;
-
-			//template.style.width = _windowVisibleSize.x + 'px';
-			template.style.height = _windowVisibleSize.y + 'px';
-		}
-
-
 
 		_viewportSize.x = self.scrollWrap.clientWidth;
 		_viewportSize.y = self.scrollWrap.clientHeight;
@@ -1256,7 +1146,6 @@ var _gestureStartTime,
 
 	_isZoomingIn,
 	_verticalDragInitiated,
-	_oldAndroidTouchEndTimeout,
 	_currZoomedItemIndex = 0,
 	_centerPoint = _getEmptyPoint(),
 	_lastReleaseTime = 0,
@@ -1537,10 +1426,6 @@ var _gestureStartTime,
 
 		if(_initialZoomRunning) {
 			e.preventDefault();
-			return;
-		}
-
-		if(_oldAndroidTouchEndTimeout && e.type === 'mousedown') {
 			return;
 		}
 
@@ -2953,7 +2838,7 @@ _registerModule('Controller', {
 							return;
 						}
 						if( !item.imageAppended ) {
-							if(_features.transform && (_mainScrollAnimating || _initialZoomRunning) ) {
+							if(_mainScrollAnimating || _initialZoomRunning) {
 								_imagesToAppendPool.push({
 									item:item,
 									baseDiv:baseDiv,
@@ -2980,22 +2865,19 @@ _registerModule('Controller', {
 					_shout('imageLoadComplete', index, item);
 				};
 
-				if(framework.features.transform) {
-					
-					var placeholderClassName = 'pswp__img pswp__img--placeholder'; 
-					placeholderClassName += (item.msrc ? '' : ' pswp__img--placeholder--blank');
+				
+				var placeholderClassName = 'pswp__img pswp__img--placeholder'; 
+				placeholderClassName += (item.msrc ? '' : ' pswp__img--placeholder--blank');
 
-					var placeholder = framework.createEl(placeholderClassName, item.msrc ? 'img' : '');
-					if(item.msrc) {
-						placeholder.src = item.msrc;
-					}
-					
-					_setImageSize(item, placeholder);
-
-					baseDiv.appendChild(placeholder);
-					item.placeholder = placeholder;
-
+				var placeholder = framework.createEl(placeholderClassName, item.msrc ? 'img' : '');
+				if(item.msrc) {
+					placeholder.src = item.msrc;
 				}
+				
+				_setImageSize(item, placeholder);
+
+				baseDiv.appendChild(placeholder);
+				item.placeholder = placeholder;
 				
 
 				
@@ -3007,7 +2889,7 @@ _registerModule('Controller', {
 
 				if( self.allowProgressiveImg() ) {
 					// just append image
-					if(!_initialContentSet && _features.transform) {
+					if(!_initialContentSet) {
 						_imagesToAppendPool.push({
 							item:item, 
 							baseDiv:baseDiv, 
@@ -4155,7 +4037,6 @@ initPhotoSwipeFromDOM('.gallery');
 .pswp__bg{transition:opacity .2s cubic-bezier(.4,0,.22,1);position:absolute;left:0;top:0;width:100%;height:100%;background-color:#000;opacity:0}
 .pswp--animated-in .pswp__bg,.pswp--animated-in .pswp__zoom-wrap{transition:none}
 .pswp__item{position:absolute;left:0;right:0;top:0;bottom:0;overflow:hidden}
-.pswp--ie .pswp__img{width:100%;left:0;top:0}
 .pswp__error-msg{position:absolute;left:0;top:50%;width:100%;text-align:center;font-size:14px;line-height:16px;margin-top:-8px;color:#ccc}
 .pswp__error-msg a{color:#ccc;text-decoration:underline}
 
