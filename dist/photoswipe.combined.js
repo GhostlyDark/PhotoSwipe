@@ -3429,8 +3429,6 @@ var PhotoSwipeUI_Default =
 		_controlsVisible = true,
 		_fullscrenAPI,
 		_controls,
-		_captionContainer,
-		_fakeCaptionContainer,
 		_indexIndicator,
 		_initalCloseOnScrollValue,
 		_isIdle,
@@ -3445,22 +3443,12 @@ var PhotoSwipeUI_Default =
 		_options,
 		_defaultUIOptions = {
 			barsSize: {top:0, bottom:'auto'},
-			closeElClasses: ['item', 'caption', 'zoom-wrap', 'ui', 'top-bar'], 
+			closeElClasses: ['item', 'zoom-wrap', 'ui', 'top-bar'], 
 			timeToIdle: 4000, 
 			timeToIdleOutside: 1000,
 			loadingIndicatorDelay: 1000, // 2s
-			
-			addCaptionHTMLFn: function(item, captionEl /*, isFake */) {
-				if(!item.title) {
-					captionEl.children[0].innerHTML = '';
-					return false;
-				}
-				captionEl.children[0].innerHTML = item.title;
-				return true;
-			},
 
 			closeEl:true,
-			captionEl: false,
 			fullscreenEl: true,
 			counterEl: true,
 			arrowEl: true,
@@ -3635,23 +3623,7 @@ var PhotoSwipeUI_Default =
 			if( _fitControlsInViewport() ) {
 				
 				var bars = _options.barsSize; 
-				if(_options.captionEl && bars.bottom === 'auto') {
-					if(!_fakeCaptionContainer) {
-						_fakeCaptionContainer = framework.createEl('pswp__caption pswp__caption--fake');
-						_fakeCaptionContainer.appendChild( framework.createEl('pswp__caption__center') );
-						_controls.insertBefore(_fakeCaptionContainer, _captionContainer);
-						framework.addClass(_controls, 'pswp__ui--fit');
-					}
-					if( _options.addCaptionHTMLFn(item, _fakeCaptionContainer, true) ) {
-
-						var captionSize = _fakeCaptionContainer.clientHeight;
-						gap.bottom = parseInt(captionSize,10) || 44;
-					} else {
-						gap.bottom = bars.top; // if no caption, set size of bottom gap to size of top
-					}
-				} else {
-					gap.bottom = bars.bottom === 'auto' ? 0 : bars.bottom;
-				}
+				gap.bottom = bars.bottom === 'auto' ? 0 : bars.bottom;
 				
 				// height of top bar is static, no need to calculate it
 				gap.top = bars.top;
@@ -3710,13 +3682,6 @@ var PhotoSwipeUI_Default =
 
 
 	var _uiElements = [
-		{ 
-			name: 'caption', 
-			option: 'captionEl',
-			onInit: function(el) {  
-				_captionContainer = el; 
-			} 
-		},
 		{ 
 			name: 'counter', 
 			option: 'counterEl',
@@ -3837,18 +3802,6 @@ var PhotoSwipeUI_Default =
 			}
 		});
 
-		// Allow text selection in caption
-		_listen('preventDragEvent', function(e, isDown, preventObj) {
-			var t = e.target || e.srcElement;
-			if(
-				t && 
-				t.getAttribute('class') && e.type.indexOf('mouse') > -1 && 
-				( t.getAttribute('class').indexOf('__caption') > 0 || (/(SMALL|STRONG|EM)/i).test(t.tagName) ) 
-			) {
-				preventObj.prevent = false;
-			}
-		});
-
 		// bind events for UI
 		_listen('bindEvents', function() {
 			framework.bind(_controls, 'pswpTap click', _onControlsTap);
@@ -3884,12 +3837,6 @@ var PhotoSwipeUI_Default =
 
 		// clean up things when gallery is destroyed
 		_listen('destroy', function() {
-			if(_options.captionEl) {
-				if(_fakeCaptionContainer) {
-					_controls.removeChild(_fakeCaptionContainer);
-				}
-				framework.removeClass(_captionContainer, 'pswp__caption--empty');
-			}
 
 			framework.removeClass(_controls, 'pswp__ui--over-close');
 			framework.addClass( _controls, 'pswp__ui--hidden');
@@ -3932,12 +3879,6 @@ var PhotoSwipeUI_Default =
 		if(_controlsVisible && pswp.currItem) {
 			
 			ui.updateIndexIndicator();
-
-			if(_options.captionEl) {
-				_options.addCaptionHTMLFn(pswp.currItem, _captionContainer);
-
-				_togglePswpClass(_captionContainer, 'caption--empty', !pswp.currItem.title);
-			}
 
 			_overlayUIUpdated = true;
 
@@ -4150,13 +4091,6 @@ var initPhotoSwipeFromDOM = function(gallerySelector) {
 				w: parseInt(size[0], 10),
 				h: parseInt(size[1], 10)
 			};
-
-			
-
-			if(figureEl.children.length > 1) {
-				// <figcaption> content
-				item.title = figureEl.children[1].innerHTML; 
-			}
  
 			if(linkEl.children.length > 0) {
 				// <img> thumbnail element, retrieving thumbnail url
