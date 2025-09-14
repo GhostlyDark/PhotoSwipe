@@ -154,48 +154,6 @@ var framework = {
 		}
 
 		features.pointerEvent = navigator.pointerEnabled || navigator.msPointerEnabled;
-
-		// fix false-positive detection of old Android in new IE
-		// (IE11 ua string contains "Android 4.0")
-		
-		if(!features.pointerEvent) { 
-
-			var ua = navigator.userAgent;
-
-			// Detect if device is iPhone or iPod and if it's older than iOS 8
-			// http://stackoverflow.com/a/14223920
-			// 
-			// This detection is made because of buggy top/bottom toolbars
-			// that don't trigger window.resize event.
-			// For more info refer to _isFixedPosition variable in core.js
-
-			if (/iP(hone|od)/.test(navigator.platform)) {
-				var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
-				if(v && v.length > 0) {
-					v = parseInt(v[1], 10);
-					if(v >= 1 && v < 8 ) {
-						features.isOldIOSPhone = true;
-					}
-				}
-			}
-
-			// Detect old Android (before KitKat)
-			// due to bugs related to position:fixed
-			// http://stackoverflow.com/questions/7184573/pick-up-the-android-version-in-the-browser-by-javascript
-			
-			var match = ua.match(/Android\s([0-9\.]*)/);
-			var androidversion =  match ? match[1] : 0;
-			androidversion = parseFloat(androidversion);
-			if(androidversion >= 1 ) {
-				if(androidversion < 4.4) {
-					features.isOldAndroid = true; // for fixed position bug & performance
-				}
-				features.androidVersion = androidversion; // for touchend bug
-			}	
-			features.isMobileOpera = /opera mini|opera mobi/i.test(ua);
-
-			// p.s. yes, yes, UA sniffing is bad, propose your solution for above bugs.
-		}
 		
 		var styleChecks = ['transform', 'perspective', 'animationName'],
 			vendors = ['', 'webkit','Moz','ms','O'],
@@ -819,13 +777,6 @@ var publicMethods = {
 			click: _onGlobalClick
 		};
 
-		// disable show/hide effects on old browsers that don't support CSS animations or transforms, 
-		// old IOS, Android and Opera mobile. Blackberry seems to work fine, even older models.
-		var oldPhone = _features.isOldIOSPhone || _features.isOldAndroid || _features.isMobileOpera;
-		if(!_features.animationName || !_features.transform || oldPhone) {
-			_options.showAnimationDuration = _options.hideAnimationDuration = 0;
-		}
-
 		// init modules
 		for(i = 0; i < _modules.length; i++) {
 			self['init' + _modules[i]]();
@@ -844,11 +795,6 @@ var publicMethods = {
 			_currentItemIndex = 0;
 		}
 		self.currItem = _getItemAt( _currentItemIndex );
-
-		
-		if(_features.isOldIOSPhone || _features.isOldAndroid) {
-			_isFixedPosition = false;
-		}
 		
 		if(_options.modal) {
 			if(!_isFixedPosition) {
@@ -1906,25 +1852,6 @@ var _gestureStartTime,
 	
 	// Pointerup/pointercancel/touchend/touchcancel/mouseup event handler
 	_onDragRelease = function(e) {
-
-		if(_features.isOldAndroid ) {
-
-			if(_oldAndroidTouchEndTimeout && e.type === 'mouseup') {
-				return;
-			}
-
-			// on Android (v4.1, 4.2, 4.3 & possibly older) 
-			// ghost mousedown/up event isn't preventable via e.preventDefault,
-			// which causes fake mousedown event
-			// so we block mousedown/up for 600ms
-			if( e.type.indexOf('touch') > -1 ) {
-				clearTimeout(_oldAndroidTouchEndTimeout);
-				_oldAndroidTouchEndTimeout = setTimeout(function() {
-					_oldAndroidTouchEndTimeout = 0;
-				}, 600);
-			}
-			
-		}
 
 		_shout('pointerUp');
 
@@ -3504,11 +3431,7 @@ var PhotoSwipeUI_Default =
 
 				// Some versions of Android don't prevent ghost click event 
 				// when preventDefault() was called on touchstart and/or touchend.
-				// 
-				// This happens on v4.3, 4.2, 4.1, 
-				// older versions strangely work correctly, 
-				// but just in case we add delay on all of them)	
-				var tapDelay = framework.features.isOldAndroid ? 600 : 30;
+				var tapDelay = 30;
 				_blockControlsTapTimeout = setTimeout(function() {
 					_blockControlsTap = false;
 				}, tapDelay);
@@ -3561,7 +3484,7 @@ var PhotoSwipeUI_Default =
 			}
 		},
 		_setupFullscreenAPI = function() {
-			if(_options.fullscreenEl && !framework.features.isOldAndroid) {
+			if(_options.fullscreenEl) {
 				if(!_fullscrenAPI) {
 					_fullscrenAPI = ui.getFullscreenAPI();
 				}
