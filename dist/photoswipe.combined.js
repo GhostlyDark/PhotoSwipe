@@ -3462,7 +3462,6 @@ var PhotoSwipeUI_Default =
 			closeEl:true,
 			captionEl: false,
 			fullscreenEl: true,
-			zoomEl: false,
 			counterEl: true,
 			arrowEl: true,
 			preloaderEl: true,
@@ -3717,11 +3716,6 @@ var PhotoSwipeUI_Default =
 			onInit: function(el) {  
 				_captionContainer = el; 
 			} 
-		},
-		{ 
-			name: 'button--zoom', 
-			option: 'zoomEl',
-			onTap: pswp.toggleDesktopZoom
 		},
 		{ 
 			name: 'counter', 
