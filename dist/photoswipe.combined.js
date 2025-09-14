@@ -4106,7 +4106,6 @@ var initPhotoSwipeFromDOM = function(gallerySelector) {
 	var galleryElements = document.querySelectorAll( gallerySelector );
 
 	for(var i = 0, l = galleryElements.length; i < l; i++) {
-		galleryElements[i].setAttribute('data-pswp-uid', i+1);
 		galleryElements[i].onclick = onThumbnailsClick;
 	}
 };
