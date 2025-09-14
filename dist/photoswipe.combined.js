@@ -2861,6 +2861,7 @@ var _getItemAt,
 		};		
 
 		img.src = item.src;// + '?a=' + Math.random();
+		img.decoding = "async";
 
 		return img;
 	},
@@ -3157,6 +3158,7 @@ _registerModule('Controller', {
 				img = framework.createEl('pswp__img', 'img');
 				img.style.opacity = 1;
 				img.src = item.src;
+				img.decoding = "async";
 				_setImageSize(item, img);
 				_appendImage(index, item, baseDiv, img, true);
 			}
