@@ -204,7 +204,7 @@ var _options = {
 	closeOnVerticalDrag: true,
 	verticalDragRange: 0.75,
 	hideAnimationDuration: 200,
-	showAnimationDuration: 200,
+	showAnimationDuration: 0,
 	showHideOpacity: false,
 	focus: true,
 	escKey: true,
